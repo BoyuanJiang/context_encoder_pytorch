@@ -3,14 +3,14 @@
 This is the Pytorch implement of [CVPR 2016 paper on Context Encoders](http://cs.berkeley.edu/~pathak/context_encoder/)
 
 ![corrupted](https://github.com/BoyuanJiang/context_encoder_pytorch/blob/master/val_cropped_samples.png)
-!(result)(https://github.com/BoyuanJiang/context_encoder_pytorch/blob/master/val_recon_samples.png)
+![result](https://github.com/BoyuanJiang/context_encoder_pytorch/blob/master/val_recon_samples.png)
 ### 1) Semantic Inpainting Demo
 
 1. Install PyTorch http://pytorch.org/
 
 2. Clone the repository
   ```Shell
-  git clone https://github.com/BoyuanJInag/context_encoder_pytorch.git
+  git clone https://github.com/BoyuanJiang/context_encoder_pytorch.git
   ```
 3. Demo
 
@@ -46,6 +46,6 @@ python train.py --cuda --wtl2 0.999 --niter 200
 
 3. Test
 
-    This step is similar with [Semantic Inpainting Demo](#1-semantic-inpainting-demo)
+    This step is similar to [Semantic Inpainting Demo](#1-semantic-inpainting-demo)
 
     
