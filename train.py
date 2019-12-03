@@ -177,16 +177,18 @@ for epoch in range(resume_epoch,opt.niter):
         real_cpu, _ = data
         real_center_cpu = real_cpu[:,:,int(opt.imageSize/4):int(opt.imageSize/4)+int(opt.imageSize/2),int(opt.imageSize/4):int(opt.imageSize/4)+int(opt.imageSize/2)]
         batch_size = real_cpu.size(0)
-        input_real.data.resize_(real_cpu.size()).copy_(real_cpu)
-        input_cropped.data.resize_(real_cpu.size()).copy_(real_cpu)
-        real_center.data.resize_(real_center_cpu.size()).copy_(real_center_cpu)
+        with torch.no_grad():
+            input_real.resize_(real_cpu.size()).copy_(real_cpu)
+            input_cropped.resize_(real_cpu.size()).copy_(real_cpu)
+            real_center.resize_(real_center_cpu.size()).copy_(real_center_cpu)
         input_cropped.data[:,0,int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred),int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred)] = 2*117.0/255.0 - 1.0
         input_cropped.data[:,1,int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred),int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred)] = 2*104.0/255.0 - 1.0
         input_cropped.data[:,2,int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred),int(opt.imageSize/4+opt.overlapPred):int(opt.imageSize/4+opt.imageSize/2-opt.overlapPred)] = 2*123.0/255.0 - 1.0
 
         # train with real
         netD.zero_grad()
-        label.data.resize_(batch_size).fill_(real_label)
+        with torch.no_grad():
+            label.resize_(batch_size).fill_(real_label)
 
         output = netD(real_center)
         errD_real = criterion(output, label)
@@ -197,7 +199,8 @@ for epoch in range(resume_epoch,opt.niter):
         # noise.data.resize_(batch_size, nz, 1, 1)
         # noise.data.normal_(0, 1)
         fake = netG(input_cropped)
-        label.data.fill_(fake_label)
+        with torch.no_grad():
+            label.fill_(fake_label)
         output = netD(fake.detach())
         errD_fake = criterion(output, label)
         errD_fake.backward()
@@ -233,7 +236,7 @@ for epoch in range(resume_epoch,opt.niter):
 
         print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f / %.4f l_D(x): %.4f l_D(G(z)): %.4f'
               % (epoch, opt.niter, i, len(dataloader),
-                 errD.data[0], errG_D.data[0],errG_l2.data[0], D_x,D_G_z1, ))
+                 errD.item(), errG_D.item(),errG_l2.item(), D_x,D_G_z1, ))
         if i % 100 == 0:
             vutils.save_image(real_cpu,
                     'result/train/real/real_samples_epoch_%03d.png' % (epoch))
