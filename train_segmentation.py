@@ -25,7 +25,6 @@ parser.add_argument('--dataset',  default='streetview', help='cifar10 | lsun | i
 parser.add_argument('--dataroot',  default='dataset/val', help='path to dataset')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=2)
 parser.add_argument('--batchSize', type=int, default=64, help='input batch size')
-parser.add_argument('--num_epoch', type=int, default=20, help='number of training epoch')
 parser.add_argument('--imageSize', type=int, default=128, help='the height / width of the input image to network')
 parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
 parser.add_argument('--ngf', type=int, default=64)
@@ -78,7 +77,9 @@ criterionMSE = nn.MSELoss()
 optimizer_fc = optim.Adam(semantic.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 
 if opt.cuda:
+    print("Using GPU...")
     netG.cuda()
+    semantic.cuda()
     input_real, input_cropped = input_real.cuda(),input_cropped.cuda()
     criterionMSE.cuda()
     real_center = real_center.cuda()
@@ -87,7 +88,7 @@ input_real = Variable(input_real)
 input_cropped = Variable(input_cropped)
 real_center = Variable(real_center)
 
-for epoch in opt.num_epoch:
+for epoch in range(opt.niter):
     running_loss = 0.0
     # dataiter = iter(dataloader)
     for idx, data in enumerate(dataloader, 0):
@@ -113,10 +114,11 @@ for epoch in opt.num_epoch:
         # construct a new network
         # TODO: One issue need to be discussed, use real image or cropped image
         representation = netG.getBottleneck(input_cropped)
+        print(representation.size())
         output = semantic.forward(representation)
 
         # using regular MSE loss here
-        err = criterionMSE()
+        err = criterionMSE(output, label)
 
         err.backward()
         optimizer_fc.step()

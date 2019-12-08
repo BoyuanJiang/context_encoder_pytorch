@@ -30,10 +30,14 @@ class _netG(nn.Module):
             # state size: (nef*8) x 4 x 4
             nn.Conv2d(opt.nef*8,opt.nBottleneck,4, bias=False),
             # tate size: (nBottleneck) x 1 x 1
+        )
+        # TODO: test out whether include the activation
+        #     nn.BatchNorm2d(opt.nBottleneck),
+        #     nn.LeakyReLU(0.2, inplace=True)
+        # )
+        self.main_decode = nn.Sequential(
             nn.BatchNorm2d(opt.nBottleneck),
             nn.LeakyReLU(0.2, inplace=True),
-        )
-        self.main_decode = nn.Sequential(
             # input is Bottleneck, going into a convolution
             nn.ConvTranspose2d(opt.nBottleneck, opt.ngf * 8, 4, 1, 0, bias=False),
             nn.BatchNorm2d(opt.ngf * 8),
@@ -107,7 +111,7 @@ class _netlocalD(nn.Module):
         return output.view(-1, 1)
 
 
-class _semantic(nn.module):
+class _semantic(nn.Module):
     def __init__(self, opt):
         super(_semantic, self).__init__()
         #TODO: could add hidden param in opt later.
@@ -116,12 +120,14 @@ class _semantic(nn.module):
         # "layer to a hidden layer then to label"
         # now, directly to label
         hidden = 8000
-        num_labels = 10
-        self.fc1 = nn.linear(opt.nBottleneck, num_labels)
+        dim_output = 128*128
+        # TODO: check th dim in the _negG
+        self.fc1 = nn.Linear(opt.nBottleneck*opt.batchSize, dim_output)
 
     def forward(self, input):
         #TODO: added activation function here, check if it is allowed
+        input = input.view(-1)
         output = F.relu(self.fc1(input))
-        return F.log_softmax(output)
-
+        # return F.log_softmax(output)
+        return output
 
