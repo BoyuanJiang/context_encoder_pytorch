@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class _netG(nn.Module):
@@ -104,4 +105,23 @@ class _netlocalD(nn.Module):
             output = self.main(input)
 
         return output.view(-1, 1)
+
+
+class _semantic(nn.module):
+    def __init__(self, opt):
+        super(_semantic, self).__init__()
+        #TODO: could add hidden param in opt later.
+        #TODO: check whether adding one fully-connected layer means
+        # "layer directly to labels" or
+        # "layer to a hidden layer then to label"
+        # now, directly to label
+        hidden = 8000
+        num_labels = 10
+        self.fc1 = nn.linear(opt.nBottleneck, num_labels)
+
+    def forward(self, input):
+        #TODO: added activation function here, check if it is allowed
+        output = F.relu(self.fc1(input))
+        return F.log_softmax(output)
+
 
