@@ -6,7 +6,7 @@ class _netG(nn.Module):
     def __init__(self, opt):
         super(_netG, self).__init__()
         self.ngpu = opt.ngpu
-        self.main = nn.Sequential(
+        self.main_encode = nn.Sequential(
             # input is (nc) x 128 x 128
             nn.Conv2d(opt.nc,opt.nef,4,2,1, bias=False),
             nn.LeakyReLU(0.2, inplace=True),
@@ -31,6 +31,8 @@ class _netG(nn.Module):
             # tate size: (nBottleneck) x 1 x 1
             nn.BatchNorm2d(opt.nBottleneck),
             nn.LeakyReLU(0.2, inplace=True),
+        )
+        self.main_decode = nn.Sequential(
             # input is Bottleneck, going into a convolution
             nn.ConvTranspose2d(opt.nBottleneck, opt.ngf * 8, 4, 1, 0, bias=False),
             nn.BatchNorm2d(opt.ngf * 8),
@@ -55,10 +57,19 @@ class _netG(nn.Module):
 
     def forward(self, input):
         if isinstance(input.data, torch.cuda.FloatTensor) and self.ngpu > 1:
-            output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
+            tmp = nn.parallel.data_parallel(self.main_enocde, input, range(self.ngpu))
+            output = nn.parallel.data_parallel(self.main_decode, tmp, range(self.ngpu))
         else:
-            output = self.main(input)
+            tmp = self.main_encode(input)
+            output = self.main_decode(tmp)
         return output
+
+    def getBottleneck(self, input):
+        if isinstance(input.data, torch.cuda.FloatTensor) and self.ngpu > 1:
+            tmp = nn.parallel.data_parallel(self.main_enocde, input, range(self.ngpu))
+        else:
+            tmp = self.main_encode(input)
+        return tmp
 
 
 class _netlocalD(nn.Module):
