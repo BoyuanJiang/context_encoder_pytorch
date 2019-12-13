@@ -16,6 +16,8 @@ from torch.autograd import Variable
 from model import _netG
 from model import _semantic
 
+from utils import *
+
 # TODO: Could add submodule Pytorch-Encoding with segmentationLoss and other evaluation implementation. Add to robot-tool repo?
 # TODO: delete useless code after fixing all the TODOs
 
@@ -66,7 +68,8 @@ transform = transforms.Compose([transforms.Scale(opt.imageSize),
                                     transforms.CenterCrop(opt.imageSize),
                                     transforms.ToTensor(),
                                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
-dataset = dset.ImageFolder(root=opt.dataroot, transform=transform )
+# dataset = dset.ImageFolder(root=opt.dataroot, transform=transform)
+dataset = ImageDataset(input_dir='/dataset/train/release1_seq1/', transformer=transform)
 assert dataset
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
                                          shuffle=True, num_workers=int(opt.workers))
