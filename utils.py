@@ -2,6 +2,48 @@ import torch
 from PIL import Image
 from torch.autograd import Variable
 
+class ToTensor(object):
+    """Convert ndarrays in sample to Tensors."""
+
+    def __call__(self, sample):
+        image, mask = sample['input'], sample['mask']
+
+        # numpy: H x W x C
+        # torch: C X H X W
+        image, mask = image.transpose((2, 0, 1)), mask.transpose((2, 0, 1))
+        return {'input': torch.from_numpy(image),
+                'mask': torch.from_numpy(mask)}
+
+
+class ImageDataset(Dataset):
+    def __init__(self, input_dir, transformer=None):
+        self.input_dir = input_dir
+        self.transformer = transformer
+
+    def __len__(self):
+        return len([x for x in os.listdir(self.input_dir) if os.path.isdir(os.path.join(self.input_dir, x))])
+
+    # def __one_hot_encode(self, image):
+    #     image = image // 32
+    #     mask_ohe = np.zeros([image.shape[0], image.shape[1], 8])
+    #     for c in range(8):
+    #         mask_ohe[:, :, c] = (image == c).astype(np.float)
+    #     return mask_ohe
+
+    def __getitem__(self, idx):
+
+        input_image = io.imread(self.input_dir + "frame{0:03d}_input.jpg".format(idx))
+        # print(input_image)
+        mask = io.imread(self.input_dir + "frame{0:03d}_mask.png".format(idx))
+        # mask_image = io.imread(mask_img_name)
+        # mask = self.__one_hot_encode(mask)
+        sample = {'input': input_image, 'mask': mask}
+
+        if self.transformer:
+            sample = self.transformer(sample)
+
+        return sample
+
 
 def load_image(filename, size=None, scale=None):
     img = Image.open(filename)
