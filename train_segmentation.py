@@ -47,6 +47,9 @@ parser.add_argument('--wtl2',type=float,default=0.999,help='0 means do not use e
 opt = parser.parse_args()
 print(opt)
 
+# free gpu memory
+torch.cuda.empty_cache() 
+
 # generator network
 netG = _netG(opt)
 netG.load_state_dict(torch.load(opt.netG,map_location=lambda storage, location: storage)['state_dict'])
@@ -94,7 +97,8 @@ for epoch in range(opt.niter):
     for idx, data in enumerate(dataloader, 0):
         # label not included in dataloader yet
         real_cpu, label = data
-
+        if opt.cuda:
+            label = label.cuda()
         input_real.data.resize_(real_cpu.size()).copy_(real_cpu)
         input_cropped.data.resize_(real_cpu.size()).copy_(real_cpu)
         real_center_cpu = real_cpu[:, :, opt.imageSize / 4:opt.imageSize / 4 + opt.imageSize / 2,
