@@ -1,6 +1,10 @@
 import torch
 from PIL import Image
 from torch.autograd import Variable
+from torch.utils.data import Dataset
+import os
+from torchvision import transforms
+
 
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
@@ -31,12 +35,17 @@ class ImageDataset(Dataset):
     #     return mask_ohe
 
     def __getitem__(self, idx):
-
-        input_image = io.imread(self.input_dir + "frame{0:03d}_input.jpg".format(idx))
+        inputfn = self.input_dir + "/frame{0:03d}_input.png".format(idx)
+        print(inputfn)
+        print(self.input_dir)
+        input_image = Image.open(inputfn).convert('RGB')
+       #  input_image = transforms.ToPILImage()(input_image)
         # print(input_image)
-        mask = io.imread(self.input_dir + "frame{0:03d}_mask.png".format(idx))
+        mask = Image.open(self.input_dir + "/frame{0:03d}_mask.png".format(idx)).convert('P')
         # mask_image = io.imread(mask_img_name)
+        # mask = transforms.ToPILImage()(mask)      
         # mask = self.__one_hot_encode(mask)
+
         sample = {'input': input_image, 'mask': mask}
 
         if self.transformer:

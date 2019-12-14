@@ -65,11 +65,13 @@ semantic = _semantic(opt)
 
 #TODO: incorporate ground truth labels with dataloader. Lezhou?
 transform = transforms.Compose([transforms.Scale(opt.imageSize),
-                                    transforms.CenterCrop(opt.imageSize),
-                                    transforms.ToTensor(),
-                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
+                                    # transforms.CenterCrop(opt.imageSize,
+                                    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                                    transforms.ToTensor()])
 # dataset = dset.ImageFolder(root=opt.dataroot, transform=transform)
-dataset = ImageDataset(input_dir='/dataset/train/release1_seq1/', transformer=transform)
+dataset = ImageDataset(input_dir='dataset/train/release1_seq1/', transformer=transform)
+print(dataset.__getitem__(1))
+print(dataset.__len__())
 assert dataset
 dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
                                          shuffle=True, num_workers=int(opt.workers))
