@@ -29,7 +29,7 @@ parser.add_argument('--nz', type=int, default=100, help='size of the latent z ve
 parser.add_argument('--ngf', type=int, default=64)
 parser.add_argument('--ndf', type=int, default=64)
 parser.add_argument('--nc', type=int, default=3)
-parser.add_argument('--niter', type=int, default=25, help='number of epochs to train for')
+parser.add_argument('--niter', type=int, default=30, help='number of epochs to train for')
 parser.add_argument('--lr', type=float, default=0.0002, help='learning rate, default=0.0002')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
 parser.add_argument('--cuda', action='store_true', help='enables cuda')
@@ -174,6 +174,8 @@ optimizerD = optim.Adam(netD.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 
 for epoch in range(resume_epoch,opt.niter):
+    total_loss_D = 0.0
+    total_loss_G = 0.0
     for i, data in enumerate(dataloader, 0):
         real_cpu, _ = data
         real_center_cpu = real_cpu[:,:,int(opt.imageSize/4):int(opt.imageSize/4)+int(opt.imageSize/2),int(opt.imageSize/4):int(opt.imageSize/4)+int(opt.imageSize/2)]
@@ -239,6 +241,9 @@ for epoch in range(resume_epoch,opt.niter):
         print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f / %.4f l_D(x): %.4f l_D(G(z)): %.4f'
               % (epoch, opt.niter, i, len(dataloader),
                  errD.item(), errG_D.item(),errG_l2.item(), D_x,D_G_z1, ))
+        total_loss_D += errD.item()
+        total_loss_G += errG_D.item()
+
         if i % 100 == 0:
             vutils.save_image(real_cpu,
                     'result/train/real/real_samples_epoch_%03d.png' % (epoch))
@@ -248,12 +253,14 @@ for epoch in range(resume_epoch,opt.niter):
             recon_image.data[:,:,int(opt.imageSize/4):int(opt.imageSize/4+opt.imageSize/2),int(opt.imageSize/4):int(opt.imageSize/4+opt.imageSize/2)] = fake.data
             vutils.save_image(recon_image.data,
                     'result/train/recon/recon_center_samples_epoch_%03d.png' % (epoch))
+    print('[%d/%d] Loss_D: %.4f Loss_G: %.4f'
+          % (epoch, opt.niter, total_loss_D, total_loss_G))
 
 
     # do checkpointing
     torch.save({'epoch':epoch+1,
                 'state_dict':netG.state_dict()},
-                'model/netG_sample.pth' )
+                'model/netG_all.pth' )
     torch.save({'epoch':epoch+1,
                 'state_dict':netD.state_dict()},
-                'model/netlocalD.pth' )
+                'model/netlocalD_all.pth' )
