@@ -16,6 +16,8 @@ from torch.autograd import Variable
 from model import _netG
 from model import _semantic
 
+from miccai import MICCAISegmentation
+
 from utils import *
 
 # TODO: Could add submodule Pytorch-Encoding with segmentationLoss and other evaluation implementation. Add to robot-tool repo?
@@ -69,13 +71,19 @@ transform = transforms.Compose([transforms.Scale(opt.imageSize),
                                     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
                                     transforms.ToTensor()])
 # dataset = dset.ImageFolder(root=opt.dataroot, transform=transform)
-dataset = ImageDataset(input_dir='dataset/train/release1_seq1/', transformer=transform)
-print(dataset.__getitem__(1))
-print(dataset.__len__())
-assert dataset
-dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
-                                         shuffle=True, num_workers=int(opt.workers))
+# dataset = ImageDataset(input_dir='dataset/train/release1_seq1/', transformer=transform)
+train_set = miccai.MICCAISegmentation(opt, split='train')
+val_set = miccai.MICCAISegmentation(opt, split='val')
 
+num_class = train_set.NUM_CLASSES
+
+print(dataset.__getitem__(1))
+
+assert dataset
+# dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
+#                                          shuffle=True, num_workers=int(opt.workers))
+train_loader = DataLoader(train_set, batch_size=opt.batchSize, shuffle=True, **kwargs)
+val_loader = DataLoader(val_set, batch_size=opt.batchSize, shuffle=False, **kwargs)
 
 input_real = torch.FloatTensor(opt.batchSize, 3, opt.imageSize, opt.imageSize)
 input_cropped = torch.FloatTensor(opt.batchSize, 3, opt.imageSize, opt.imageSize)
@@ -99,7 +107,7 @@ real_center = Variable(real_center)
 for epoch in range(opt.niter):
     running_loss = 0.0
     # dataiter = iter(dataloader)
-    for idx, data in enumerate(dataloader, 0):
+    for idx, data in enumerate(train_loader):
         # label not included in dataloader yet
         real_cpu, label = data
         if opt.cuda:
