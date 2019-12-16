@@ -44,12 +44,12 @@ if __name__ == '__main__':
 
     random.shuffle(image_paths)
 
-    with open('/home/flz/data_context/train_image.txt', 'w') as f:
+    with open('/home/dl/context_encoder_pytorch/train_image.txt', 'w') as f:
         # for path in image_paths:
         for path in image_paths:
             f.write("%s\n" % path)
 
-    with open('/home/flz/data_context/train_label.txt', 'w') as f:
+    with open('/home/dl/context_encoder_pytorch/train_label.txt', 'w') as f:
         # for path in image_paths:
         for path in image_paths:
             f.write("%s\n" % path)
