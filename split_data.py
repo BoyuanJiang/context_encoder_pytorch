@@ -20,7 +20,7 @@ def grab_img_gt_pair_paths(base_dir):
             continue
 
         image_dir = os.path.join(seq_dir, 'left_frames')
-        # label_dir = os.path.join(seq_dir, 'labels')
+        label_dir = os.path.join(seq_dir, 'labels')
 
         images = os.listdir(image_dir)
         for image in images:
@@ -28,7 +28,7 @@ def grab_img_gt_pair_paths(base_dir):
                 continue
 
             image_paths.append(os.path.join(image_dir, image))
-            # label_paths.append(os.path.join(label_dir, image))
+            label_paths.append(os.path.join(label_dir, image))
 
     return image_paths, label_paths
 
@@ -51,6 +51,6 @@ if __name__ == '__main__':
 
     with open('/home/dl/context_encoder_pytorch/train_label.txt', 'w') as f:
         # for path in image_paths:
-        for path in image_paths:
+        for path in label_paths:
             f.write("%s\n" % path)
 
