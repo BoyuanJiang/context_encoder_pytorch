@@ -28,7 +28,12 @@ def grab_img_gt_pair_paths(base_dir):
                 continue
 
             image_paths.append(os.path.join(image_dir, image))
-            label_paths.append(os.path.join(label_dir, image))
+
+        labels = os.listdir(image_dir)
+        for label in labels:
+            if '_' in label:
+                continue
+            label_paths.append(os.path.join(label_dir, label))
 
     return image_paths, label_paths
 
