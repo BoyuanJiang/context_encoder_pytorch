@@ -23,7 +23,7 @@ parser.add_argument('--dataset',  default='streetview', help='cifar10 | lsun | i
 parser.add_argument('--dataroot',  default='dataset/train', help='path to dataset')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=2)
 parser.add_argument('--batchSize', type=int, default=64, help='input batch size')
-parser.add_argument('--imageSize', type=int, default=128, help='the height / width of the input image to network')
+parser.add_argument('--imageSize', type=int, default=512, help='the height / width of the input image to network')
 
 parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
 parser.add_argument('--ngf', type=int, default=64)
@@ -48,6 +48,7 @@ parser.add_argument('--wtlD',type=float,default=0.001,help='0 means do not use e
 opt = parser.parse_args()
 print(opt)
 
+torch.cuda.empty_cache()
 try:
     os.makedirs("result/train/cropped")
     os.makedirs("result/train/real")
@@ -191,6 +192,7 @@ for epoch in range(resume_epoch,opt.niter):
             label.resize_(batch_size).fill_(real_label)
 
         output = netD(real_center)
+        # print(output.size(), label.size())
         errD_real = criterion(output, label)
         errD_real.backward()
         D_x = output.data.mean()
