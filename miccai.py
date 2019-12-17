@@ -64,8 +64,8 @@ class MICCAISegmentation(Dataset):
 
     def __getitem__(self, index):
         _img, _target = self._make_img_gt_point_pair(index)
-        # sample = {'image': _img, 'label': _target}
-        sample = _img
+        sample = {'image': _img, 'label': _target}
+        # sample = _img
 
 
         for split in self.split:
@@ -91,20 +91,20 @@ class MICCAISegmentation(Dataset):
         return mask
 
     def transform_tr(self, sample):
-        # composed_transforms = transforms.Compose([
-        #     tr.RandomHorizontalFlip(),
-        #     tr.RandomScaleCrop(base_size=self.args.base_size, crop_size=self.args.crop_size),
-        #     tr.RandomGaussianBlur(),
-        #     tr.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-        #     tr.ToTensor()])
         composed_transforms = transforms.Compose([
-                            RandomHorizontalFlip(),
-                            RandomScaleCrop(base_size=self.args.imageSize, crop_size=self.args.crop_size),
-                            # transforms.Resize(self.args.imageSize),
-                            # transforms.CenterCrop(self.args.imageSize),
-                            transforms.ToTensor(),
-                            transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
-                            ])
+            tr.RandomHorizontalFlip(),
+            tr.RandomScaleCrop(base_size=self.args.base_size, crop_size=self.args.crop_size),
+            tr.RandomGaussianBlur(),
+            tr.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+            tr.ToTensor()])
+        # composed_transforms = transforms.Compose([
+        #                     RandomHorizontalFlip(),
+        #                     RandomScaleCrop(base_size=self.args.imageSize, crop_size=self.args.crop_size),
+        #                     # transforms.Resize(self.args.imageSize),
+        #                     # transforms.CenterCrop(self.args.imageSize),
+        #                     transforms.ToTensor(),
+        #                     transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
+        #                     ])
         # dataset = dset.ImageFolder(root=opt.dataroot, transform=transform )
 
         return composed_transforms(sample)

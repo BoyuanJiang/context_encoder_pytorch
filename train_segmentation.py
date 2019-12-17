@@ -12,6 +12,7 @@ import torchvision.datasets as dset
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
 from torch.autograd import Variable
+from tqdm import tqdm 
 
 from model import _netG
 from model import _semantic
@@ -109,44 +110,46 @@ real_center = Variable(real_center)
 for epoch in range(opt.niter):
     running_loss = 0.0
     # dataiter = iter(dataloader)
-    for idx, data in enumerate(train_loader):
+    tbar = tqdm(train_loader)   
+    for idx, data in enumerate(tbar):
         # label not included in dataloader yet
         # real_cpu, label = data
-        for one in data:
-            real_cpu = one['image']
-            label = one['label']
-            if opt.cuda:
-                label = label.cuda()
-            with torch.no_grad():
-                input_real.resize_(real_cpu.size()).copy_(real_cpu)
-            # input_cropped.data.resize_(real_cpu.size()).copy_(real_cpu)
-            # real_center_cpu = real_cpu[:, :, opt.imageSize / 4:opt.imageSize / 4 + opt.imageSize / 2,
-            #                   opt.imageSize / 4:opt.imageSize / 4 + opt.imageSize / 2]
-            # real_center.data.resize_(real_center_cpu.size()).copy_(real_center_cpu)
+        
+        
+        real_cpu = data['image']
+        label = data['label']
+        if opt.cuda:
+            label = label.cuda()
+        with torch.no_grad():
+            input_real.resize_(real_cpu.size()).copy_(real_cpu)
+        # input_cropped.data.resize_(real_cpu.size()).copy_(real_cpu)
+        # real_center_cpu = real_cpu[:, :, opt.imageSize / 4:opt.imageSize / 4 + opt.imageSize / 2,
+        #                   opt.imageSize / 4:opt.imageSize / 4 + opt.imageSize / 2]
+        # real_center.data.resize_(real_center_cpu.size()).copy_(real_center_cpu)
 
-            # input_cropped.data[:, 0,
-            # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
-            # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 117.0 / 255.0 - 1.0
-            # input_cropped.data[:, 1,
-            # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
-            # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 104.0 / 255.0 - 1.0
-            # input_cropped.data[:, 2,
-            # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
-            # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 123.0 / 255.0 - 1.0
+        # input_cropped.data[:, 0,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 117.0 / 255.0 - 1.0
+        # input_cropped.data[:, 1,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 104.0 / 255.0 - 1.0
+        # input_cropped.data[:, 2,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 123.0 / 255.0 - 1.0
 
-            # construct a new network
-            # TODO: One issue need to be discussed, use real image or cropped image
-            representation = netG.getBottleneck(input_real)
-            print(representation.size())
-            output = semantic.forward(representation)
+        # construct a new network
+        # TODO: One issue need to be discussed, use real image or cropped image
+        representation = netG.getBottleneck(input_real)
+        print(representation.size())
+        output = semantic.forward(representation)
 
-            # using regular MSE loss here
-            err = criterionMSE(output, label)
+        # using regular MSE loss here
+        err = criterionMSE(output, label)
 
-            err.backward()
-            optimizer_fc.step()
+        err.backward()
+        optimizer_fc.step()
 
-            running_loss += loss.cpu().item()
+        running_loss += loss.cpu().item()
 
 print("finished training")
 
