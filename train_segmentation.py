@@ -114,8 +114,7 @@ for epoch in range(opt.niter):
     for idx, data in enumerate(tbar):
         # label not included in dataloader yet
         # real_cpu, label = data
-        
-        
+
         real_cpu = data['image']
         label = data['label']
         if opt.cuda:

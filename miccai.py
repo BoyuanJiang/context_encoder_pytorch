@@ -5,7 +5,7 @@ import numpy as np
 from torch.utils.data import Dataset
 # from mypath import Path
 from torchvision import transforms
-# from dataloaders import custom_transforms as tr
+import custom_transforms as tr
 import random
 
 class MICCAISegmentation(Dataset):
@@ -67,7 +67,6 @@ class MICCAISegmentation(Dataset):
         sample = {'image': _img, 'label': _target}
         # sample = _img
 
-
         for split in self.split:
             if split == "train":
                 return self.transform_tr(sample)
@@ -93,8 +92,7 @@ class MICCAISegmentation(Dataset):
     def transform_tr(self, sample):
         composed_transforms = transforms.Compose([
             tr.RandomHorizontalFlip(),
-            tr.RandomScaleCrop(base_size=self.args.base_size, crop_size=self.args.crop_size),
-            tr.RandomGaussianBlur(),
+            tr.RandomScaleCrop(base_size=self.args.imageSize, crop_size=self.args.crop_size),
             tr.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
             tr.ToTensor()])
         # composed_transforms = transforms.Compose([
