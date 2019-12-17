@@ -3,7 +3,7 @@ import os
 from PIL import Image, ImageOps, ImageFilter
 import numpy as np
 from torch.utils.data import Dataset
-from mypath import Path
+# from mypath import Path
 from torchvision import transforms
 # from dataloaders import custom_transforms as tr
 import random
@@ -19,7 +19,7 @@ class MICCAISegmentation(Dataset):
 
     def __init__(self,
                  args,
-                 base_dir=Path.db_root_dir('miccai'),
+                 base_dir='.',
                  split='train',
                  ):
         """
@@ -27,7 +27,7 @@ class MICCAISegmentation(Dataset):
         :param split: train/val
         :param transform: transform to apply
         """
-        super().__init__()
+        super(MICCAISegmentation, self).__init__()
         self._base_dir = base_dir
 
         if isinstance(split, str):
@@ -99,7 +99,7 @@ class MICCAISegmentation(Dataset):
         #     tr.ToTensor()])
         composed_transforms = transforms.Compose([
                             RandomHorizontalFlip(),
-                            RandomScaleCrop(base_size=self.args.base_size, crop_size=self.args.crop_size),
+                            RandomScaleCrop(base_size=self.args.imageSize, crop_size=self.args.crop_size),
                             # transforms.Resize(self.args.imageSize),
                             # transforms.CenterCrop(self.args.imageSize),
                             transforms.ToTensor(),

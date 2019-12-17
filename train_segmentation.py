@@ -29,7 +29,9 @@ parser.add_argument('--dataset',  default='streetview', help='cifar10 | lsun | i
 parser.add_argument('--dataroot',  default='dataset/val', help='path to dataset')
 parser.add_argument('--workers', type=int, help='number of data loading workers', default=2)
 parser.add_argument('--batchSize', type=int, default=64, help='input batch size')
-parser.add_argument('--imageSize', type=int, default=128, help='the height / width of the input image to network')
+parser.add_argument('--imageSize', type=int, default=512, help='the height / width of the input image to network')
+parser.add_argument('--crop_size', type=int, default=512, help='crop size')
+
 parser.add_argument('--nz', type=int, default=100, help='size of the latent z vector')
 parser.add_argument('--ngf', type=int, default=64)
 parser.add_argument('--ndf', type=int, default=64)
@@ -72,18 +74,18 @@ transform = transforms.Compose([transforms.Scale(opt.imageSize),
                                     transforms.ToTensor()])
 # dataset = dset.ImageFolder(root=opt.dataroot, transform=transform)
 # dataset = ImageDataset(input_dir='dataset/train/release1_seq1/', transformer=transform)
-train_set = miccai.MICCAISegmentation(opt, split='train')
-val_set = miccai.MICCAISegmentation(opt, split='val')
+train_set = MICCAISegmentation(opt, split='train')
+# val_set = MICCAISegmentation(opt, split='val')
 
 num_class = train_set.NUM_CLASSES
 
-print(dataset.__getitem__(1))
+print(train_set.__getitem__(1))
 
-assert dataset
+assert train_set
 # dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
 #                                          shuffle=True, num_workers=int(opt.workers))
-train_loader = DataLoader(train_set, batch_size=opt.batchSize, shuffle=True, **kwargs)
-val_loader = DataLoader(val_set, batch_size=opt.batchSize, shuffle=False, **kwargs)
+train_loader = torch.utils.data.DataLoader(train_set, batch_size=opt.batchSize, shuffle=True)
+# val_loader = DataLoader(val_set, batch_size=opt.batchSize, shuffle=False, **kwargs)
 
 input_real = torch.FloatTensor(opt.batchSize, 3, opt.imageSize, opt.imageSize)
 input_cropped = torch.FloatTensor(opt.batchSize, 3, opt.imageSize, opt.imageSize)
@@ -109,28 +111,31 @@ for epoch in range(opt.niter):
     # dataiter = iter(dataloader)
     for idx, data in enumerate(train_loader):
         # label not included in dataloader yet
-        real_cpu, label = data
+        # real_cpu, label = data
+        real_cpu = data['image']
+        label = data['label']
         if opt.cuda:
             label = label.cuda()
-        input_real.data.resize_(real_cpu.size()).copy_(real_cpu)
-        input_cropped.data.resize_(real_cpu.size()).copy_(real_cpu)
-        real_center_cpu = real_cpu[:, :, opt.imageSize / 4:opt.imageSize / 4 + opt.imageSize / 2,
-                          opt.imageSize / 4:opt.imageSize / 4 + opt.imageSize / 2]
-        real_center.data.resize_(real_center_cpu.size()).copy_(real_center_cpu)
+        with torch.no_grad():
+            input_real.resize_(real_cpu.size()).copy_(real_cpu)
+        # input_cropped.data.resize_(real_cpu.size()).copy_(real_cpu)
+        # real_center_cpu = real_cpu[:, :, opt.imageSize / 4:opt.imageSize / 4 + opt.imageSize / 2,
+        #                   opt.imageSize / 4:opt.imageSize / 4 + opt.imageSize / 2]
+        # real_center.data.resize_(real_center_cpu.size()).copy_(real_center_cpu)
 
-        input_cropped.data[:, 0,
-        opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
-        opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 117.0 / 255.0 - 1.0
-        input_cropped.data[:, 1,
-        opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
-        opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 104.0 / 255.0 - 1.0
-        input_cropped.data[:, 2,
-        opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
-        opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 123.0 / 255.0 - 1.0
+        # input_cropped.data[:, 0,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 117.0 / 255.0 - 1.0
+        # input_cropped.data[:, 1,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 104.0 / 255.0 - 1.0
+        # input_cropped.data[:, 2,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred,
+        # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 123.0 / 255.0 - 1.0
 
         # construct a new network
         # TODO: One issue need to be discussed, use real image or cropped image
-        representation = netG.getBottleneck(input_cropped)
+        representation = netG.getBottleneck(input_real)
         print(representation.size())
         output = semantic.forward(representation)
 
