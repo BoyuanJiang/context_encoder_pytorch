@@ -93,6 +93,7 @@ input_cropped = torch.FloatTensor(opt.batchSize, 3, opt.imageSize, opt.imageSize
 real_center = torch.FloatTensor(opt.batchSize, 3, opt.imageSize/2, opt.imageSize/2)
 
 criterionMSE = nn.MSELoss()
+print(list(semantic.parameters()))
 optimizer_fc = optim.Adam(semantic.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 
 if opt.cuda:
@@ -151,7 +152,7 @@ for epoch in range(opt.niter):
         err.backward()
         optimizer_fc.step()
 
-        running_loss += loss.cpu().item()
+        running_loss += err.cpu().item()
 
 print("finished training")
 

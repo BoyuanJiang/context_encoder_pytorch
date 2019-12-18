@@ -141,19 +141,22 @@ class _semantic(nn.Module):
         # "layer to a hidden layer then to label"
         # now, directly to label
 
-        dim_output = opt.imageSize * opt.imageSize
-        self.fc1 = nn.Linear(opt.nBottleneck*opt.batchSize, dim_output)
-
-        self.upconv = nn.ConvTranspose2d(opt.nc, opt.nc, 4, 2, 1, bias=False),
+        # dim_output = opt.imageSize * opt.imageSize
+        # self.fc1 = nn.Linear(opt.nBottleneck*opt.batchSize, dim_output)
+        self.upconv = nn.Sequential(
+                nn.ConvTranspose2d(opt.nc, opt.nc, 4, 2, 1, bias=False),
+                nn.Tanh()
+                )
 
     def forward(self, input, representation):
-        if representation == 'bottleneck':
-            input = input.view(-1)
-            output = F.relu(self.fc1(input))
-        elif representation == 'fake_cropped':
-            output = self.upconv(input)
-        else:
-            raise ValueError("unkown representation value")
+        # if representation == 'bottleneck':
+        #     input = input.view(-1)
+        #     output = F.relu(self.fc1(input))
+        # elif representation == 'fake_cropped':
+        #     output = self.upconv(input)
+        # else:
+        #     raise ValueError("unkown representation value")
             # return F.log_softmax(output)
+        output = self.upconv(input)
         return output
 
