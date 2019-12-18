@@ -13,7 +13,7 @@ import torchvision.transforms as transforms
 import torchvision.utils as vutils
 from torch.autograd import Variable
 from tqdm import tqdm
-
+import numpy as np
 from model import _netG
 from model import _semantic
 
@@ -67,7 +67,8 @@ for param in netG.parameters():
 netG.eval()
 
 semantic = _semantic(opt)
-semantic.load_state_dict(torch.load('./fc.pth',map_location=lambda storage, location: storage)['state_dict'])
+# semantic.load_state_dict(torch.load('fc.pth',map_location=lambda storage, location: storage)['state_dict'])
+semantic.load_state_dict(torch.load('fc.pth'))
 for param in semantic.parameters():
     param.requires_grad = False
 semantic.eval()
@@ -79,8 +80,8 @@ transform = transforms.Compose([transforms.Scale(opt.imageSize),
                                     transforms.ToTensor()])
 # dataset = dset.ImageFolder(root=opt.dataroot, transform=transform)
 # dataset = ImageDataset(input_dir='dataset/train/release1_seq1/', transformer=transform)
-# train_set = MICCAISegmentation(opt, split='train')
-val_set = MICCAISegmentation(opt, split='val')
+train_set = MICCAISegmentation(opt, split='test')
+# val_set = MICCAISegmentation(opt, split='val')
 
 num_class = train_set.NUM_CLASSES
 
@@ -117,7 +118,7 @@ running_loss = 0.0
 # dataiter = iter(dataloader)
 # label not included in dataloader yet
 # real_cpu, label = data
-tbar = tqdm(val_loader)
+tbar = tqdm(train_loader)
 for idx, data in enumerate(tbar):
     real_cpu = data['image']
     label = data['label']
@@ -143,10 +144,10 @@ for idx, data in enumerate(tbar):
     pred = np.argmax(pred, axis=1)
     evaluator.add_batch(label, pred)
 
-Acc = self.evaluator.Pixel_Accuracy()
-Acc_class = self.evaluator.Pixel_Accuracy_Class()
-mIoU = self.evaluator.Mean_Intersection_over_Union()
-FWIoU = self.evaluator.Frequency_Weighted_Intersection_over_Union()
+Acc = evaluator.Pixel_Accuracy()
+Acc_class = evaluator.Pixel_Accuracy_Class()
+mIoU = evaluator.Mean_Intersection_over_Union()
+FWIoU = evaluator.Frequency_Weighted_Intersection_over_Union()
 
 print("Acc:{}, Acc_class:{}, mIoU:{}, fwIoU: {}".format(Acc, Acc_class, mIoU, FWIoU))
 
