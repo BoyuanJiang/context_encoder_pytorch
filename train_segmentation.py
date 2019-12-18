@@ -137,10 +137,13 @@ for epoch in range(opt.niter):
         # opt.imageSize / 4 + opt.overlapPred:opt.imageSize / 4 + opt.imageSize / 2 - opt.overlapPred] = 2 * 123.0 / 255.0 - 1.0
 
         # construct a new network
-        # TODO: One issue need to be discussed, use real image or cropped image
-        representation = netG.getBottleneck(input_real)
-        print(representation.size())
-        output = semantic.forward(representation)
+        # Use bottleneck as representation
+        # representation = netG.getBottleneck(input_real)
+
+        # use fake cropped as representation
+        representation = netG.forward(input_real)
+        # second argument bottleneck or fake_cropped
+        output = semantic.forward(representation, 'fake_cropped')
 
         # using regular MSE loss here
         err = criterionMSE(output, label)

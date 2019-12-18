@@ -131,7 +131,7 @@ class _netlocalD(nn.Module):
 
         return output.view(-1, 1)
 
-
+# TODO: change this to upconv
 class _semantic(nn.Module):
     def __init__(self, opt):
         super(_semantic, self).__init__()
@@ -140,15 +140,20 @@ class _semantic(nn.Module):
         # "layer directly to labels" or
         # "layer to a hidden layer then to label"
         # now, directly to label
-        hidden = 8000
-        dim_output = 128*128
-        # TODO: the output size is too big...
+
+        dim_output = opt.imageSize * opt.imageSize
         self.fc1 = nn.Linear(opt.nBottleneck*opt.batchSize, dim_output)
 
-    def forward(self, input):
-        #TODO: added activation function here, check if it is allowed
-        input = input.view(-1)
-        output = F.relu(self.fc1(input))
-        # return F.log_softmax(output)
+        self.upconv = nn.ConvTranspose2d(opt.nc, opt.nc, 4, 2, 1, bias=False),
+
+    def forward(self, input, representation):
+        if representation == 'bottleneck':
+            input = input.view(-1)
+            output = F.relu(self.fc1(input))
+        elif representation == 'fake_cropped':
+            output = self.upconv(input)
+        else:
+            raise ValueError("unkown representation value")
+            # return F.log_softmax(output)
         return output
 
