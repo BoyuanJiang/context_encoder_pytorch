@@ -68,7 +68,7 @@ netG.eval()
 
 semantic = _semantic(opt)
 # semantic.load_state_dict(torch.load('fc.pth',map_location=lambda storage, location: storage)['state_dict'])
-semantic.load_state_dict(torch.load('fc.pth'))
+semantic.load_state_dict(torch.load('model/upconv.pth'))
 for param in semantic.parameters():
     param.requires_grad = False
 semantic.eval()

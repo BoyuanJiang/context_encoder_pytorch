@@ -242,7 +242,7 @@ for epoch in range(resume_epoch,opt.niter):
               % (epoch, opt.niter, i, len(dataloader),
                  errD.item(), errG_D.item(),errG_l2.item(), D_x,D_G_z1, ))
         total_loss_D += errD.item()
-        total_loss_G += errG_D.item()
+        total_loss_G += errG.item()
 
         if i % 100 == 0:
             vutils.save_image(real_cpu,
@@ -260,7 +260,7 @@ for epoch in range(resume_epoch,opt.niter):
     # do checkpointing
     torch.save({'epoch':epoch+1,
                 'state_dict':netG.state_dict()},
-                'model/netG_all.pth' )
+                'model/netG_all_50.pth' )
     torch.save({'epoch':epoch+1,
                 'state_dict':netD.state_dict()},
-                'model/netlocalD_all.pth' )
+                'model/netlocalD_all_50.pth' )

@@ -156,7 +156,7 @@ for epoch in range(opt.niter):
 
 print("finished training")
 
-PATH = './fc.pth'
+PATH = 'model/upconv.pth'
 torch.save(semantic.state_dict(), PATH)
 
 

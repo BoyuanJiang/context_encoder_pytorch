@@ -4,10 +4,10 @@ import glob
 import random
 
 MICCAI_PATH = '/home/dl/dataset/MICCAI2018_EndoVis_Challenge'
-LABELED = ['train_data']
+# LABELED = ['train_data']
 
 
-# LABELED = ['test_data']
+LABELED = ['test_data']
 
 def grab_img_gt_pair_paths(base_dir):
     image_paths, label_paths = [], []
@@ -49,12 +49,12 @@ if __name__ == '__main__':
 
     random.shuffle(image_paths)
 
-    with open('/home/dl/context_encoder_pytorch/train_image.txt', 'w') as f:
+    with open('/home/dl/context_encoder_pytorch/test_image.txt', 'w') as f:
         # for path in image_paths:
         for path in image_paths:
             f.write("%s\n" % path)
 
-    with open('/home/dl/context_encoder_pytorch/train_label.txt', 'w') as f:
+    with open('/home/dl/context_encoder_pytorch/test_label.txt', 'w') as f:
         # for path in image_paths:
         for path in label_paths:
             f.write("%s\n" % path)
